@@ -42,6 +42,9 @@ export interface PlantGrowthStage {
   headline: string;
   description: string;
   tip: string;
+  timeLabel: string;
+  startDay: number;
+  endDay: number;
   visualHint: 'seed' | 'sprout' | 'leafy' | 'flowering' | 'fruiting' | 'harvest' | 'herb' | 'native';
 }
 

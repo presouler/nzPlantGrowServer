@@ -473,3 +473,9 @@ Local endpoints were also verified:
 5. Add API documentation examples for all endpoints.
 6. Add deployment environment notes.
 7. Commit and push initial backend MVP.
+
+### Realistic timing update
+
+- Growth simulator data now includes approximate real-world timing via `timeLabel`, `startDay`, and `endDay`.
+- Timing is based on NZ-oriented seed/harvest references including Egmont Seeds culture guide values: tomato 90–130 days, lettuce 60–90 days, broad beans about 115 days, silverbeet 60–90 days, coriander about 65 days, parsley about 60 days, spinach 45–70 days; kawakawa uses a multi-month/year native shrub establishment timeline rather than a vegetable crop cycle.
+- Stage descriptions avoid pretending leafy crops need a fruiting phase: lettuce/spinach/silverbeet describe bolting as a risk, herbs describe seed-set, and kawakawa describes canopy/berries/mature shelter.
