@@ -30,6 +30,7 @@ Local URLs:
 
 - `http://127.0.0.1:3000/health`
 - `http://127.0.0.1:3000/api/recommendations/current`
+- `http://127.0.0.1:3000/api/weather/auckland`
 
 ## Commands
 
@@ -59,11 +60,14 @@ backend/
     routes/
       health.ts
       recommendations.ts
+      weather.ts
     services/
       recommendationService.ts
       seasonService.ts
+      weatherService.ts
     types/
       plant.ts
+      weather.ts
 ```
 
 ## Source Files
@@ -72,10 +76,13 @@ backend/
 - `src/server.ts` — reads host/port env and starts HTTP server
 - `src/routes/health.ts` — health endpoint
 - `src/routes/recommendations.ts` — recommendation endpoint
+- `src/routes/weather.ts` — Auckland current weather endpoint
 - `src/services/seasonService.ts` — New Zealand timezone, date, month, season helpers
 - `src/services/recommendationService.ts` — recommendation filtering and response assembly
+- `src/services/weatherService.ts` — Open-Meteo Auckland weather fetch, validation, and mapping
 - `src/data/plants.ts` — static MVP plant seed data
-- `src/types/plant.ts` — API/data TypeScript types
+- `src/types/plant.ts` — plant recommendation API/data TypeScript types
+- `src/types/weather.ts` — weather API TypeScript types
 
 ## API Routes
 
@@ -119,6 +126,47 @@ Response shape:
 }
 ```
 
+### `GET /api/weather/auckland`
+
+Returns current Auckland weather from the free Open-Meteo Forecast API. No API key is required. Backend coordinates are fixed to Auckland (`-36.8485`, `174.7633`) and Open-Meteo is requested with `timezone=GMT` so `observedAt` is returned as stable UTC ISO time.
+
+Success response shape:
+
+```json
+{
+  "location": "Auckland",
+  "temperatureCelsius": 18.4,
+  "condition": "cloudy",
+  "comfort": "suitable",
+  "observedAt": "2026-05-20T04:00:00.000Z",
+  "source": "Open-Meteo"
+}
+```
+
+Error response if Open-Meteo is unavailable or returns an invalid payload:
+
+```json
+{
+  "error": "Weather unavailable"
+}
+```
+
+Weather condition values are normalized to:
+
+- `cloudy`
+- `overcast`
+- `sunny`
+- `rainy`
+- `sun-shower`
+- `windy`
+
+Comfort values are normalized to:
+
+- `cold`
+- `suitable`
+- `hot`
+- `very-hot`
+
 ## API Type Contract
 
 Current backend types:
@@ -156,6 +204,19 @@ type Plant = {
   water: WaterRequirement;
   difficulty: Difficulty;
   notes: string;
+};
+
+type WeatherCondition = 'cloudy' | 'overcast' | 'sunny' | 'rainy' | 'sun-shower' | 'windy';
+
+type WeatherComfort = 'cold' | 'suitable' | 'hot' | 'very-hot';
+
+type AucklandWeatherResponse = {
+  location: 'Auckland';
+  temperatureCelsius: number;
+  condition: WeatherCondition;
+  comfort: WeatherComfort;
+  observedAt: string;
+  source: 'Open-Meteo';
 };
 ```
 
@@ -223,7 +284,7 @@ Implementation:
 - `PORT` — HTTP port, defaults to `3000`
 - `HOST` — bind host, defaults to `0.0.0.0`
 
-No database environment variables are required for the static-data MVP.
+No database environment variables are required for the static-data MVP. The Auckland weather endpoint uses Open-Meteo without an API key.
 
 Future database env candidates:
 
@@ -235,6 +296,7 @@ Future database env candidates:
 Frontend calls:
 
 - `GET /api/recommendations/current`
+- `GET /api/weather/auckland`
 
 Frontend Vite proxy forwards `/api` to `http://localhost:3000`.
 
@@ -243,6 +305,7 @@ Important field names:
 - Backend returns `icon`, `plantingMonths`, and `water`.
 - `icon` is already normalized/stable and should be used by the frontend for plant artwork selection instead of deriving icons only from display names.
 - Frontend normalizes `plantingMonths` and `water` to `suitableMonths` and `watering` in `frontend/src/api/recommendations.ts`.
+- Weather responses are already frontend-stable: `location`, `temperatureCelsius`, `condition`, `comfort`, `observedAt`, `source`.
 
 Do not change backend field names without coordinating frontend normalization and docs.
 
@@ -278,6 +341,7 @@ Local endpoints were also verified:
 - Connected backend workspace to GitHub repository `presouler/nzPlantGrowServer`.
 - Added health endpoint.
 - Added current recommendation endpoint.
+- Added Auckland current weather endpoint backed by Open-Meteo with normalized condition/comfort fields.
 - Added static NZ plant seed data.
 - Added stable backend `icon` field to plants and recommendation responses for frontend artwork selection.
 - Removed Chinese display names from backend seed data and API documentation for the initial English-only version.
