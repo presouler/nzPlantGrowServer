@@ -30,6 +30,7 @@ Local URLs:
 
 - `http://127.0.0.1:3000/health`
 - `http://127.0.0.1:3000/api/recommendations/current`
+- `http://127.0.0.1:3000/api/plants/:id`
 - `http://127.0.0.1:3000/api/weather/auckland`
 
 ## Commands
@@ -59,9 +60,11 @@ backend/
       plants.ts
     routes/
       health.ts
+      plants.ts
       recommendations.ts
       weather.ts
     services/
+      plantService.ts
       recommendationService.ts
       seasonService.ts
       weatherService.ts
@@ -76,7 +79,9 @@ backend/
 - `src/server.ts` — reads host/port env and starts HTTP server
 - `src/routes/health.ts` — health endpoint
 - `src/routes/recommendations.ts` — recommendation endpoint
+- `src/routes/plants.ts` — single plant detail endpoint
 - `src/routes/weather.ts` — Auckland current weather endpoint
+- `src/services/plantService.ts` — plant lookup and detail response assembly
 - `src/services/seasonService.ts` — New Zealand timezone, date, month, season helpers
 - `src/services/recommendationService.ts` — recommendation filtering and response assembly
 - `src/services/weatherService.ts` — Open-Meteo Auckland weather fetch, validation, and mapping
@@ -123,6 +128,57 @@ Response shape:
       "notes": "Best in cooler months; provide afternoon shade in warm regions."
     }
   ]
+}
+```
+
+### `GET /api/plants/:id`
+
+Returns a single plant detail record from the static MVP plant seed data. No database is used. The response includes all base plant fields plus stable detail-page fields for display.
+
+Success response shape:
+
+```json
+{
+  "id": "lettuce",
+  "name": "Lettuce",
+  "icon": "lettuce",
+  "category": "vegetable",
+  "plantingMonths": [2, 3, 4, 5, 8, 9, 10, 11],
+  "sun": "part sun",
+  "water": "moderate",
+  "difficulty": "easy",
+  "notes": "Best in cooler months; provide afternoon shade in warm regions.",
+  "plantingWindowLabel": "Feb, Mar, Apr, May, Aug, Sep, Oct, Nov",
+  "careTips": [
+    "Lettuce grows best with morning sun and some protection from harsh afternoon heat.",
+    "Keep soil evenly moist, especially while seedlings establish and during dry weather.",
+    "Good choice for beginners and regular home garden maintenance."
+  ],
+  "detailSections": [
+    {
+      "id": "planting-window",
+      "title": "Planting window",
+      "body": "Best months to plant: Feb, Mar, Apr, May, Aug, Sep, Oct, Nov."
+    },
+    {
+      "id": "care",
+      "title": "Care",
+      "body": "Lettuce grows best with morning sun and some protection from harsh afternoon heat. Keep soil evenly moist, especially while seedlings establish and during dry weather. Good choice for beginners and regular home garden maintenance."
+    },
+    {
+      "id": "notes",
+      "title": "Notes",
+      "body": "Best in cooler months; provide afternoon shade in warm regions."
+    }
+  ]
+}
+```
+
+Not found response:
+
+```json
+{
+  "error": "Plant not found"
 }
 ```
 
@@ -204,6 +260,18 @@ type Plant = {
   water: WaterRequirement;
   difficulty: Difficulty;
   notes: string;
+};
+
+type PlantDetailSection = {
+  id: string;
+  title: string;
+  body: string;
+};
+
+type PlantDetailResponse = Plant & {
+  plantingWindowLabel: string;
+  careTips: string[];
+  detailSections: PlantDetailSection[];
 };
 
 type WeatherCondition = 'cloudy' | 'overcast' | 'sunny' | 'rainy' | 'sun-shower' | 'windy';
@@ -296,12 +364,15 @@ Future database env candidates:
 Frontend calls:
 
 - `GET /api/recommendations/current`
+- `GET /api/plants/:id`
 - `GET /api/weather/auckland`
 
 Frontend Vite proxy forwards `/api` to `http://localhost:3000`.
 
 Important field names:
 
+- Plant detail responses include base plant fields plus `plantingWindowLabel`, `careTips`, and `detailSections`.
+- Missing plant detail IDs return `404 { "error": "Plant not found" }`.
 - Backend returns `icon`, `plantingMonths`, and `water`.
 - `icon` is already normalized/stable and should be used by the frontend for plant artwork selection instead of deriving icons only from display names.
 - Frontend normalizes `plantingMonths` and `water` to `suitableMonths` and `watering` in `frontend/src/api/recommendations.ts`.
@@ -341,6 +412,7 @@ Local endpoints were also verified:
 - Connected backend workspace to GitHub repository `presouler/nzPlantGrowServer`.
 - Added health endpoint.
 - Added current recommendation endpoint.
+- Added single plant detail endpoint at `GET /api/plants/:id` backed by static seed data.
 - Added Auckland current weather endpoint backed by Open-Meteo with normalized condition/comfort fields.
 - Added static NZ plant seed data.
 - Added stable backend `icon` field to plants and recommendation responses for frontend artwork selection.

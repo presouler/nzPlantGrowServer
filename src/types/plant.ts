@@ -30,6 +30,18 @@ export interface Plant {
   notes: string;
 }
 
+export interface PlantDetailSection {
+  id: string;
+  title: string;
+  body: string;
+}
+
+export interface PlantDetailResponse extends Plant {
+  plantingWindowLabel: string;
+  careTips: string[];
+  detailSections: PlantDetailSection[];
+}
+
 export type NzSeason = 'summer' | 'autumn' | 'winter' | 'spring';
 
 export interface CurrentRecommendationsResponse {
