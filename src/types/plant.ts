@@ -36,10 +36,20 @@ export interface PlantDetailSection {
   body: string;
 }
 
+export interface PlantGrowthStage {
+  id: string;
+  label: string;
+  headline: string;
+  description: string;
+  tip: string;
+  visualHint: 'seed' | 'sprout' | 'leafy' | 'flowering' | 'fruiting' | 'harvest' | 'herb' | 'native';
+}
+
 export interface PlantDetailResponse extends Plant {
   plantingWindowLabel: string;
   careTips: string[];
   detailSections: PlantDetailSection[];
+  growthStages: PlantGrowthStage[];
 }
 
 export type NzSeason = 'summer' | 'autumn' | 'winter' | 'spring';

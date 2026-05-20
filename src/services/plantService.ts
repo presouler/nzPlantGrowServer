@@ -1,4 +1,4 @@
-import { plants } from '../data/plants.js';
+import { fallbackGrowthStages, plantGrowthStages, plants } from '../data/plants.js';
 import type { Plant, PlantDetailResponse } from '../types/plant.js';
 
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -54,6 +54,7 @@ function toPlantDetail(plant: Plant): PlantDetailResponse {
     ...plant,
     plantingWindowLabel,
     careTips,
+    growthStages: plantGrowthStages[plant.id] ?? fallbackGrowthStages,
     detailSections: [
       {
         id: 'planting-window',

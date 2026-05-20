@@ -133,7 +133,7 @@ Response shape:
 
 ### `GET /api/plants/:id`
 
-Returns a single plant detail record from the static MVP plant seed data. No database is used. The response includes all base plant fields plus stable detail-page fields for display.
+Returns a single plant detail record from the static MVP plant seed data. No database is used. The response includes all base plant fields plus stable detail-page fields for display, including static growth simulator stages.
 
 Success response shape:
 
@@ -153,6 +153,16 @@ Success response shape:
     "Lettuce grows best with morning sun and some protection from harsh afternoon heat.",
     "Keep soil evenly moist, especially while seedlings establish and during dry weather.",
     "Good choice for beginners and regular home garden maintenance."
+  ],
+  "growthStages": [
+    {
+      "id": "seed",
+      "label": "Seed",
+      "headline": "Sow in cool, rich soil",
+      "description": "Lettuce germinates best in mild conditions with fine, moist soil and light coverage.",
+      "tip": "Sow small batches every few weeks for a steady salad supply.",
+      "visualHint": "seed"
+    }
   ],
   "detailSections": [
     {
@@ -268,10 +278,20 @@ type PlantDetailSection = {
   body: string;
 };
 
+type PlantGrowthStage = {
+  id: string;
+  label: string;
+  headline: string;
+  description: string;
+  tip: string;
+  visualHint: 'seed' | 'sprout' | 'leafy' | 'flowering' | 'fruiting' | 'harvest' | 'herb' | 'native';
+};
+
 type PlantDetailResponse = Plant & {
   plantingWindowLabel: string;
   careTips: string[];
   detailSections: PlantDetailSection[];
+  growthStages: PlantGrowthStage[];
 };
 
 type WeatherCondition = 'cloudy' | 'overcast' | 'sunny' | 'rainy' | 'sun-shower' | 'windy';
@@ -317,6 +337,26 @@ Plant `icon` is a stable backend-provided identifier for frontend artwork select
 Seed file:
 
 - `src/data/plants.ts`
+
+## Growth Simulator Data
+
+`GET /api/plants/:id` includes `growthStages` from backend static data in `src/data/plants.ts`; no database or external runtime lookup is used. Each stage has:
+
+- `id` — stable stage identifier
+- `label` — short UI label
+- `headline` — stage summary
+- `description` — NZ home-garden explanation
+- `tip` — practical care action
+- `visualHint` — frontend artwork cue (`seed`, `sprout`, `leafy`, `flowering`, `fruiting`, `harvest`, `herb`, `native`)
+
+Current plant-specific growth data covers all existing plant IDs: `tomato`, `lettuce`, `broad-bean`, `silverbeet`, `coriander`, `parsley`, `kawakawa`, and `spinach`. Non-native vegetables/herbs use the common simulator arc `seed`, `sprout`, `leafy`, `flowering`/bolting risk, `harvest`, `mature`. Leafy greens and herbs describe flowering mainly as bolting/seed-stage risk. `kawakawa` keeps the same API stage IDs (`seed`, `sprout`, `leafy`, `flowering`, `harvest`, `mature`) for frontend compatibility, while its labels/headlines describe native-shrub phases such as Seedling, Establishing, Canopy growth, Berries, and Mature shelter.
+
+Content assumptions/sources:
+
+- Tui vegetable growing guidance: good soil, season-appropriate planting, regular watering/feeding, mulch/protection, and sustainable leaf harvest for leafy crops.
+- Kawakawa research assumptions: semi-shade, humus-rich free-draining soil, shelter from frost and strong wind, moist but not waterlogged conditions.
+- General New Zealand home-garden practice for crop lifecycle, support, succession sowing, bolting, harvest rhythm, and compost/mulch care.
+- If a future plant lacks specific data, `fallbackGrowthStages` provides a generic six-stage growth simulator response.
 
 ## Recommendation Logic
 
@@ -371,7 +411,7 @@ Frontend Vite proxy forwards `/api` to `http://localhost:3000`.
 
 Important field names:
 
-- Plant detail responses include base plant fields plus `plantingWindowLabel`, `careTips`, and `detailSections`.
+- Plant detail responses include base plant fields plus `plantingWindowLabel`, `careTips`, `detailSections`, and `growthStages`.
 - Missing plant detail IDs return `404 { "error": "Plant not found" }`.
 - Backend returns `icon`, `plantingMonths`, and `water`.
 - `icon` is already normalized/stable and should be used by the frontend for plant artwork selection instead of deriving icons only from display names.
@@ -416,6 +456,7 @@ Local endpoints were also verified:
 - Added Auckland current weather endpoint backed by Open-Meteo with normalized condition/comfort fields.
 - Added static NZ plant seed data.
 - Added stable backend `icon` field to plants and recommendation responses for frontend artwork selection.
+- Added static plant growth simulator data (`growthStages`) for tomato, lettuce, broad bean, silverbeet, coriander, parsley, kawakawa, and spinach, with a generic fallback for future plant IDs.
 - Removed Chinese display names from backend seed data and API documentation for the initial English-only version.
 - Added New Zealand timezone/month/season service.
 - Installed pnpm and migrated from `package-lock.json` to `pnpm-lock.yaml`.
