@@ -16,8 +16,9 @@
 - CORS
 - tsx for development watch mode
 - pnpm 11.1.2
-- Static seed data for MVP recommendations
-- MySQL + Prisma planned for future persistence
+- Static TypeScript plant data for MVP recommendations and plant details
+- No database/Prisma in the current backend runtime; `src/data/plants.ts` is the source of truth
+- MySQL + Prisma planned for future persistence only when static content becomes limiting
 
 ## Runtime
 
@@ -85,7 +86,7 @@ backend/
 - `src/services/seasonService.ts` — New Zealand timezone, date, month, season helpers
 - `src/services/recommendationService.ts` — recommendation filtering and response assembly
 - `src/services/weatherService.ts` — Open-Meteo Auckland weather fetch, validation, and mapping
-- `src/data/plants.ts` — static MVP plant seed data
+- `src/data/plants.ts` — static real-world NZ plant data used as the backend source of truth for recommendations and detail/growth-stage responses
 - `src/types/plant.ts` — plant recommendation API/data TypeScript types
 - `src/types/weather.ts` — weather API TypeScript types
 
@@ -121,11 +122,11 @@ Response shape:
       "name": "Lettuce",
       "icon": "lettuce",
       "category": "vegetable",
-      "plantingMonths": [2, 3, 4, 5, 8, 9, 10, 11],
+      "plantingMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
       "sun": "part sun",
       "water": "moderate",
       "difficulty": "easy",
-      "notes": "Best in cooler months; provide afternoon shade in warm regions."
+      "notes": "Can be grown year-round with the right variety; give full sun in cool months and afternoon shade in summer. Harvest loose leaves from about six weeks."
     }
   ]
 }
@@ -133,7 +134,7 @@ Response shape:
 
 ### `GET /api/plants/:id`
 
-Returns a single plant detail record from the static MVP plant seed data. No database is used. The response includes all base plant fields plus stable detail-page fields for display, including static growth simulator stages.
+Returns a single plant detail record from the backend static TypeScript plant data. No database is used. The response includes all base plant fields plus stable detail-page fields for display, including static growth simulator stages.
 
 Success response shape:
 
@@ -143,12 +144,12 @@ Success response shape:
   "name": "Lettuce",
   "icon": "lettuce",
   "category": "vegetable",
-  "plantingMonths": [2, 3, 4, 5, 8, 9, 10, 11],
+  "plantingMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   "sun": "part sun",
   "water": "moderate",
   "difficulty": "easy",
-  "notes": "Best in cooler months; provide afternoon shade in warm regions.",
-  "plantingWindowLabel": "Feb, Mar, Apr, May, Aug, Sep, Oct, Nov",
+  "notes": "Can be grown year-round with the right variety; give full sun in cool months and afternoon shade in summer. Harvest loose leaves from about six weeks.",
+  "plantingWindowLabel": "Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec",
   "careTips": [
     "Lettuce grows best with morning sun and some protection from harsh afternoon heat.",
     "Keep soil evenly moist, especially while seedlings establish and during dry weather.",
@@ -168,7 +169,7 @@ Success response shape:
     {
       "id": "planting-window",
       "title": "Planting window",
-      "body": "Best months to plant: Feb, Mar, Apr, May, Aug, Sep, Oct, Nov."
+      "body": "Best months to plant: Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec."
     },
     {
       "id": "care",
@@ -178,7 +179,7 @@ Success response shape:
     {
       "id": "notes",
       "title": "Notes",
-      "body": "Best in cooler months; provide afternoon shade in warm regions."
+      "body": "Can be grown year-round with the right variety; give full sun in cool months and afternoon shade in summer. Harvest loose leaves from about six weeks."
     }
   ]
 }
@@ -284,6 +285,9 @@ type PlantGrowthStage = {
   headline: string;
   description: string;
   tip: string;
+  timeLabel: string;
+  startDay: number;
+  endDay: number;
   visualHint: 'seed' | 'sprout' | 'leafy' | 'flowering' | 'fruiting' | 'harvest' | 'herb' | 'native';
 };
 
@@ -334,6 +338,17 @@ Plant `icon` is a stable backend-provided identifier for frontend artwork select
 - `coriander`
 - `kawakawa`
 
+Current planting-window assumptions in static data:
+
+- Tomato: Sep-Dec, with Labour Weekend/after-frost planting emphasized for NZ home gardens.
+- Lettuce: Jan-Dec, because Tui notes lettuce can be grown across seasons with variety choice; summer needs partial shade and prompt harvest.
+- Broad bean: Mar-Aug, autumn/winter cool-season sowing.
+- Silverbeet: Jan-Dec, because Tui describes it as year-round and perpetually harvestable.
+- Coriander: Jan-Dec, but notes flag that cooler months reduce bolting and succession sowing is important.
+- Parsley: Jan-Dec, with winter seedling planting suggested because germination is slow.
+- Kawakawa: Mar-Sep, focused on cooler/moister establishment months for a sheltered native shrub.
+- Spinach: Mar-Sep, representing classic cool-season spinach quality; notes mention warmer-tolerant varieties exist.
+
 Seed file:
 
 - `src/data/plants.ts`
@@ -353,10 +368,21 @@ Current plant-specific growth data covers all existing plant IDs: `tomato`, `let
 
 Content assumptions/sources:
 
-- Tui vegetable growing guidance: good soil, season-appropriate planting, regular watering/feeding, mulch/protection, and sustainable leaf harvest for leafy crops.
-- Kawakawa research assumptions: semi-shade, humus-rich free-draining soil, shelter from frost and strong wind, moist but not waterlogged conditions.
-- General New Zealand home-garden practice for crop lifecycle, support, succession sowing, bolting, harvest rhythm, and compost/mulch care.
+- Tui Garden tomato guide (`https://tuigarden.co.nz/how-to-guide/tomato-growing-guide/`): Labour Weekend is the traditional NZ planting time, tomatoes dislike cold soil/frost, need rich warm soil, full sun, staking, crop rotation away from tomatoes/potatoes, and regular water/feed.
+- Tui Garden lettuce guide (`https://tuigarden.co.nz/how-to-guide/lettuce-growing-guide/`): lettuce can be ready within about six weeks, likes full sun autumn-spring and partial shade in summer heat, rich free-draining soil, consistent water, mulch, and slug/snail protection.
+- Tui Garden bean guide (`https://tuigarden.co.nz/how-to-guide/bean-growing-guide/`) plus NZ cool-season practice: beans are easy, need prepared fertile soil, watering before/after planting, feeding, mulch/protection; broad beans are represented as the autumn-winter bean crop.
+- Tui Garden silverbeet guide (`https://tuigarden.co.nz/how-to-guide/silverbeet-growing-guide/`): silverbeet grows year-round throughout NZ, tolerates heat and cold, prefers full sun and fertile moisture-retentive soil, and can be harvested perpetually by picking leaves from the base.
+- Tui Garden coriander guide (`https://tuigarden.co.nz/how-to-guide/coriander-growing-guide/`): coriander can grow year-round, performs better in cooler months because it is less likely to bolt, grows in sun or a little shade, and dislikes root disturbance.
+- Tui Garden parsley guide (`https://tuigarden.co.nz/how-to-guide/parsley-growing-guide/`): parsley can be grown from seed but germinates slowly in winter, seedlings/young plants are easier in winter, and it suits pots or beds near the kitchen with good soil and watering.
+- Tui Garden spinach guide (`https://tuigarden.co.nz/how-to-guide/spinach-growing-guide/`): spinach is fast-growing and short-lived, often harvested frequently, with baby leaf varieties ready in about 6-8 weeks; it prefers full sun and compost-rich soil, with some warmer-tolerant varieties.
+- Tui Planting Calendar (`https://tuigarden.co.nz/planting-calendar/`): used as an NZ seasonal cross-check for leafy greens/herbs including coriander, lettuce, parsley, silverbeet, and spinach.
+- Auckland Botanic Gardens Piper excelsum page (`https://www.aucklandbotanicgardens.co.nz/plants-for-auckland/plants/piper-excelsum/`) and NZ native nursery/herb references: kawakawa prefers partial shade, moist free-draining organic soil, shelter while young, and is cold/frost sensitive but tougher once established.
+- General New Zealand home-garden practice for crop lifecycle, support, succession sowing, bolting, harvest rhythm, and compost/mulch care fills gaps where guides do not provide exact stage-by-stage simulator data.
 - If a future plant lacks specific data, `fallbackGrowthStages` provides a generic six-stage growth simulator response.
+
+Maintenance convention: keep plant content edits in `src/data/plants.ts` first, then update this document with the source/assumption behind any changed planting window, care note, or growth timing. Do not reintroduce frontend mock plant content as a competing source of truth.
+
+Future DB direction: when content volume or admin editing requires persistence, migrate the `Plant` and `PlantGrowthStage` shapes into Prisma/MySQL tables or JSON-backed content records, seed the initial DB from this TypeScript file, and keep the public API response contract stable during migration.
 
 ## Recommendation Logic
 
@@ -432,7 +458,15 @@ Future options:
 
 ## Validation Status
 
-Last verified after pnpm migration:
+Last verified after real static plant data update:
+
+```bash
+pnpm run typecheck
+```
+
+Passed.
+
+Previous full backend verification after pnpm migration:
 
 ```bash
 pnpm run build

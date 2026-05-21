@@ -10,18 +10,18 @@ export const plants: Plant[] = [
     sun: 'full sun',
     water: 'moderate',
     difficulty: 'easy',
-    notes: 'Plant after frost risk has passed. Stake plants and keep watering consistent.'
+    notes: "Traditional NZ planting starts around Labour Weekend once frosts have passed and soil is warm. Choose full sun, stake early, rotate beds away from last season's tomatoes or potatoes, and water/feed consistently."
   },
   {
     id: 'lettuce',
     name: 'Lettuce',
     icon: 'lettuce',
     category: 'vegetable',
-    plantingMonths: [2, 3, 4, 5, 8, 9, 10, 11],
+    plantingMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     sun: 'part sun',
     water: 'moderate',
     difficulty: 'easy',
-    notes: 'Best in cooler months; provide afternoon shade in warm regions.'
+    notes: 'Can be grown year-round with the right variety; give full sun in cool months and afternoon shade in summer. Harvest loose leaves from about six weeks.'
   },
   {
     id: 'broad-bean',
@@ -32,40 +32,40 @@ export const plants: Plant[] = [
     sun: 'full sun',
     water: 'moderate',
     difficulty: 'easy',
-    notes: 'Good cool-season crop for New Zealand gardens. Support taller plants in windy areas.'
+    notes: 'Cool-season bean suited to autumn and winter sowing in NZ. Plant in rich soil, keep watered, support in windy spots, and pick pods regularly in spring.'
   },
   {
     id: 'silverbeet',
     name: 'Silverbeet',
     icon: 'silverbeet',
     category: 'vegetable',
-    plantingMonths: [1, 2, 3, 4, 5, 8, 9, 10, 11, 12],
+    plantingMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     sun: 'full sun',
     water: 'moderate',
     difficulty: 'easy',
-    notes: 'Reliable leafy green that grows through much of the year in many NZ regions.'
+    notes: 'Year-round NZ leafy staple; likes full sun, fertile moisture-retentive soil, and regular outer-leaf picking so it keeps regrowing.'
   },
   {
     id: 'coriander',
     name: 'Coriander',
     icon: 'coriander',
     category: 'herb',
-    plantingMonths: [3, 4, 5, 8, 9, 10],
+    plantingMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     sun: 'part sun',
     water: 'moderate',
     difficulty: 'medium',
-    notes: 'Sow succession batches. Cooler weather helps prevent bolting.'
+    notes: 'Can be grown year-round but is best in cooler months; direct sow or transplant gently because roots dislike disturbance, and sow successions before plants bolt.'
   },
   {
     id: 'parsley',
     name: 'Parsley',
     icon: 'parsley',
     category: 'herb',
-    plantingMonths: [2, 3, 4, 5, 8, 9, 10, 11],
+    plantingMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     sun: 'part sun',
     water: 'moderate',
     difficulty: 'easy',
-    notes: 'Slow to germinate but hardy once established; suitable for pots or garden beds.'
+    notes: 'Plant seedlings for an easier start in winter; grow near the kitchen in pots or beds, keep watered, and harvest outer stems from the base.'
   },
   {
     id: 'kawakawa',
@@ -76,7 +76,7 @@ export const plants: Plant[] = [
     sun: 'part shade',
     water: 'moderate',
     difficulty: 'medium',
-    notes: 'Native shrub suited to sheltered, partially shaded spots with moist soil.'
+    notes: 'NZ native understory shrub for semi-shade or shade, humus-rich free-draining soil, and shelter from frost/wind while young; keep moist during establishment.'
   },
   {
     id: 'spinach',
@@ -87,7 +87,7 @@ export const plants: Plant[] = [
     sun: 'part sun',
     water: 'moderate',
     difficulty: 'easy',
-    notes: 'Prefers cool conditions; harvest leaves regularly to encourage new growth.'
+    notes: 'Fast cool-season leafy green; some varieties tolerate warmer weather, but best quality comes from rich soil, full sun to light shade, steady water, and frequent picking.'
   }
 ];
 
@@ -280,9 +280,9 @@ export const plantGrowthStages: Record<string, PlantGrowthStage[]> = {
       headline: 'Cut leaves while young and crisp',
       description: 'Loose-leaf types can be picked leaf by leaf, while heading types are cut when firm enough.',
       tip: 'Harvest in the morning for the crispest leaves.',
-      timeLabel: 'Day 60–90',
-      startDay: 60,
-      endDay: 90,
+      timeLabel: 'Around day 35–45',
+      startDay: 35,
+      endDay: 45,
       visualHint: 'harvest'
     },
     {
@@ -291,9 +291,9 @@ export const plantGrowthStages: Record<string, PlantGrowthStage[]> = {
       headline: 'Refresh the patch',
       description: 'Older lettuce becomes coarse or bolts, so the bed is best replanted in succession.',
       tip: 'Compost spent plants if healthy and re-sow for the next cool-season cycle.',
-      timeLabel: 'After 8–12 weeks',
-      startDay: 60,
-      endDay: 90,
+      timeLabel: 'After 6–10 weeks',
+      startDay: 42,
+      endDay: 70,
       visualHint: 'leafy'
     }
   ],
@@ -688,8 +688,8 @@ export const plantGrowthStages: Record<string, PlantGrowthStage[]> = {
       headline: 'Pick baby or mature leaves',
       description: 'Harvest outer leaves regularly or cut whole young plants for baby spinach.',
       tip: 'Pick in the morning and cool leaves quickly after harvesting.',
-      timeLabel: 'Day 45–70',
-      startDay: 45,
+      timeLabel: 'Day 42–56 for baby leaves; 45–70 for mature leaves',
+      startDay: 42,
       endDay: 70,
       visualHint: 'harvest'
     },
