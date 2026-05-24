@@ -420,6 +420,8 @@ Implementation:
 
 No database environment variables are required for the static-data MVP. The Auckland weather endpoint uses Open-Meteo without an API key.
 
+Frontend SSR/App Router note: if the frontend is deployed as a Node SSR server (Vite SSR today, or Next.js App Router after migration), keep backend API configuration in the frontend runtime via a server-only value such as `API_BASE_URL=http://127.0.0.1:3000`. The backend itself does not need a separate SSR-specific API-base variable.
+
 Future database env candidates:
 
 - `DATABASE_URL`
@@ -433,7 +435,16 @@ Frontend calls:
 - `GET /api/plants/:id`
 - `GET /api/weather/auckland`
 
-Frontend Vite proxy forwards `/api` to `http://localhost:3000`.
+Frontend Vite proxy currently forwards `/api` to `http://localhost:3000`. After migrating to Next.js, use either Next dev rewrites for local development or keep browser fetches relative and let nginx route `/api/` in production.
+
+Next.js App Router migration impact assessment:
+
+- No backend route or response-shape change is required for a direct Vite/Vite SSR → Next.js App Router migration; the existing public read-only JSON endpoints are stable for Server Components/server data fetching, route handlers, and client hydration.
+- Use a server-only frontend runtime variable such as `API_BASE_URL=http://127.0.0.1:3000` for Next server-side fetches. Do not expose this as `NEXT_PUBLIC_*` unless the browser intentionally needs an absolute backend URL.
+- Browser-side hydrated/client-component fetches should keep using relative `/api/...` URLs so nginx can route API requests to the backend on the same public origin.
+- Current backend `cors()` middleware is permissive, so local Next dev on another port and cross-origin browser calls will work. If CORS is later restricted, allow the public site origin plus local dev origins explicitly. Same-origin `/api` via nginx avoids browser CORS altogether.
+- Avoid running the Next app on port `3000` in production because the backend already defaults to `3000`. Run Next on a separate internal port such as `3001` (or keep `5173` if desired) and proxy the public site to that port.
+- nginx must match `/api/` before the frontend catch-all route. For Next deployment, keep `/api/` proxied directly to `http://127.0.0.1:3000`, then proxy `/` to the Next Node server. If Next route handlers are introduced, avoid placing them under `/api/*` unless nginx routing is intentionally changed, because `/api/*` belongs to the Express backend contract.
 
 Important field names:
 
@@ -457,6 +468,15 @@ Future options:
 - User saved plans/accounts would require auth.
 
 ## Validation Status
+
+Last verified after Next.js App Router backend/deploy impact review (docs-only backend change):
+
+```bash
+pnpm run typecheck
+pnpm run build
+```
+
+Both passed.
 
 Last verified after real static plant data update:
 
@@ -513,3 +533,14 @@ Local endpoints were also verified:
 - Growth simulator data now includes approximate real-world timing via `timeLabel`, `startDay`, and `endDay`.
 - Timing is based on NZ-oriented seed/harvest references including Egmont Seeds culture guide values: tomato 90–130 days, lettuce 60–90 days, broad beans about 115 days, silverbeet 60–90 days, coriander about 65 days, parsley about 60 days, spinach 45–70 days; kawakawa uses a multi-month/year native shrub establishment timeline rather than a vegetable crop cycle.
 - Stage descriptions avoid pretending leafy crops need a fruiting phase: lettuce/spinach/silverbeet describe bolting as a risk, herbs describe seed-set, and kawakawa describes canopy/berries/mature shelter.
+
+## Local Next.js Deployment Update — 2026-05-24
+
+The frontend production deployment now runs as a Next.js Node server on `127.0.0.1:3001` via LaunchAgent `com.nzplant.frontend`. Backend remains unchanged on port `3000`.
+
+nginx routing for `nzplant.kangxinxiong.com`:
+
+- `/api/` -> Express backend `http://127.0.0.1:3000`
+- `/` and frontend/static routes -> Next frontend `http://127.0.0.1:3001`
+
+The frontend server uses server-only env `API_BASE_URL=http://127.0.0.1:3000` for App Router server-side fetches. Browser traffic remains same-origin through nginx.
